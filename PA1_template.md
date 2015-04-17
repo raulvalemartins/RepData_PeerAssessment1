@@ -24,7 +24,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 ##Loading and Preprocessing the Data
 
-```{r results='hide', message=FALSE, warning=FALSE}
+
+```r
 library(data.table)
 library(dplyr)
 
@@ -43,7 +44,8 @@ ad <- ad[good,]
 
 The following code calculates and prints a histogram that shows the total number of steps taken each day. Note that there is some missing values in a few days due to the remove of invalid inputs.
 
-```{r results='hide', message=FALSE, warning=FALSE}
+
+```r
 library(ggplot2)
 library(scales)
 ## calculate outputs
@@ -64,20 +66,24 @@ g <- g + geom_histogram( stat = "identity", fill = "darkgreen" ) +
 print(g)
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+
 ### What is the mean and median of the total number of steps taken per day?
 The following code and calculates and reports the mean and median of the total number of steps taken per day.
-```{r}
+
+```r
 grouped_ad <- group_by ( ad, date)
 sum_ad <- summarize(grouped_ad, stepsperday = sum(steps))
 reported_ad <- summarize(sum_ad, meanstepsperday = mean(stepsperday), 
                                 medianstepperday = median(stepsperday))
 ```
-The mean value is `r format(reported_ad$meanstepsperday, scientific = NA)` and the median is `r reported_ad$medianstepperday`.
+The mean value is 10766.19 and the median is 10765.
 
 ###What is the average daily activity pattern?
 The following code calculates and prints a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 grouped_ad <- group_by ( ad, interval)
 averaged_ad <-  summarize(grouped_ad, avgstepsperinterval = mean(steps))
 g <- ggplot(averaged_ad, aes(x=interval, y=avgstepsperinterval, group = 1 ))
@@ -89,28 +95,33 @@ g <- g + geom_line(stat = "identity", size = 1.2, colour = "darkgreen") +
 print(g)
 ```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
 The following code and calculates and reports Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps.
 
-```{r}
+
+```r
 interval5 <- averaged_ad[averaged_ad$avgstepsperinterval == max(averaged_ad$avgstepsperinterval), 1 ]
 ```
 
-In thhis particular case the interval that contains the maximum number of steps on the average across all the days is `r interval5`.
+In thhis particular case the interval that contains the maximum number of steps on the average across all the days is 835.
 
 ###Imputing missing values
 Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data. The following code calculates the total number of missing values.
 
-```{r}
+
+```r
 ad <- tbl_df(df)
 good <- complete.cases(ad)
 totalnas <- nrow(ad[!good,] )
 ```
 
-In this case the total number of missing values is `r totalnas`.
+In this case the total number of missing values is 2304.
 
 In order repair these missing values I'll replace each missing value by the mean of that 5 minutes interval. The following code calculates and prints a histogram that shows the total number of steps taken each day after replacement of missing values.
 
-```{r}
+
+```r
 library(ggplot2)
 library(scales)
 ## replace missing values
@@ -143,24 +154,35 @@ g <- g + geom_histogram( stat = "identity", fill = "darkgreen" ) +
 print(g)
 ```
 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
 ### What is the mean and median of the total number of steps taken per day?
 The following code and calculates and reports the mean and median of the total number of steps taken per day after replacement of the missing values.
-```{r}
+
+```r
 grouped_ad <- group_by ( newad, date)
 sum_ad <- summarize(grouped_ad, stepsperday = sum(steps))
 reported_ad <- summarize(sum_ad, meanstepsperday = mean(stepsperday), 
                                 medianstepperday = median(stepsperday))
 ```
-After the replacement of the missing values the mean value is `r format(reported_ad$meanstepsperday, scientific = NA)` and the median is `r format(reported_ad$medianstepperday, scientific = NA)`.
+After the replacement of the missing values the mean value is 10749.77 and the median is 10641.
 
 ### Do these values differ from the estimates from the first part of the assignment?  What is the impact of imputing missing data on the estimates of the total daily number of steps?
 There some difference in the histogram and the mean now is some far way from the median.
 
 ###Are there differences in activity patterns between weekdays and weekends?
 The following code and calculates and print a graph with the two patterns of weekdays and weekends
-```{r}
+
+```r
 newad <- rbind( adgood, adnotgood)
 Sys.setlocale("LC_TIME", "C")
+```
+
+```
+## [1] "C"
+```
+
+```r
 newad$weekend <- "weekday"
 newad$weekend[weekdays(as.POSIXct(newad$date)) %in% c("Saturday","Sunday")] <- "weekend"
 newad$weekend <- as.factor(newad$weekend)
@@ -170,6 +192,8 @@ qplot(x = interval, y = avgsteps, data = sum_ad, geom = c("line"),
       facets = weekend~., main = "Average Number of Steps Taken", 
       ylab = "Average Number of Steps")
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 The average number of steps taken based on graph are not so diferente!
 
